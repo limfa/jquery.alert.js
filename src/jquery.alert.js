@@ -4,6 +4,8 @@
 void function($, plus_name) {
     var $bd = $('body'),
     $win =$(window) , 
+    // 原body overflow 样式
+    _ooverflow;
     fn = $.fn[plus_name] = function(opt) {
         // opt 为字符串时，进行插件操作，操作的方法为opt
         // 往后的参数将为方法的参数
@@ -63,7 +65,7 @@ void function($, plus_name) {
         self.setting = opt;
 
         // 原body overflow 样式
-        self._ooverflow;
+        // self._ooverflow;
         // resize事件
         self._resize = function() {
             var _h = $element.outerHeight(),
@@ -87,7 +89,13 @@ void function($, plus_name) {
         $.each(data || self.setting.data, function(k, v) {
             var $el = $(k, self.$element);
             if (typeof v == 'string' || typeof v == 'number') {
-                $el[$el.is(':input') ? 'val' : 'html'](v);
+                if($el.is(':input')){
+                    $el.val(v);
+                }else if($el.is('img')){
+                    $el.attr('src' ,v);
+                }else{
+                    $el.html(v);
+                }
             } else if ($.isFunction(v)) v($el);
         });
     }
@@ -112,8 +120,11 @@ void function($, plus_name) {
             });
             self.setCenter();
 
-            self._ooverflow = document.body.style.overflow;
+            // self._ooverflow = document.body.style.overflow;
+            if(!Kernel.activeAlerts[0]){
+                _ooverflow = document.body.style.overflow;
             $bd.css('overflow', 'hidden');
+            }
             $win.on('resize', self._resize).trigger('resize');
 
             // 加入活动窗体
@@ -133,7 +144,6 @@ void function($, plus_name) {
             activeClass && self.$element.addClass(activeClass);
             self.$element.fadeOut(self.setting.time, function() {
                 self.$element.unwrap().unwrap();
-                $bd.css('overflow', self._ooverflow);
                 // 关闭后事件
                 self.$element.trigger(plus_name + '.close');
             });
@@ -147,6 +157,10 @@ void function($, plus_name) {
                     Kernel.activeAlerts.splice(l ,1);
                     break;
                 }
+            }
+            // body overflow 复原
+            if(!Kernel.activeAlerts[0]){
+                $bd.css('overflow', _ooverflow);
             }
         }
     }
