@@ -2,10 +2,9 @@
  * jquery弹窗组件
  */
 void function($, plus_name) {
-    var $bd = $('body'),
-    $win =$(window) , 
-    // 原body overflow 样式
-    _ooverflow;
+    var $doc = $(document),
+    $bd = $('body'),
+    $win =$(window) ;
     fn = $.fn[plus_name] = function(opt) {
         // opt 为字符串时，进行插件操作，操作的方法为opt
         // 往后的参数将为方法的参数
@@ -64,8 +63,6 @@ void function($, plus_name) {
 
         self.setting = opt;
 
-        // 原body overflow 样式
-        // self._ooverflow;
         // resize事件
         self._resize = function() {
             var _h = $element.outerHeight(),
@@ -79,7 +76,7 @@ void function($, plus_name) {
         self.state = 'hide';
         // 背景布
         self.$mask;
-
+ 
         self.init();
     }
 
@@ -120,11 +117,12 @@ void function($, plus_name) {
             });
             self.setCenter();
 
-            // self._ooverflow = document.body.style.overflow;
-            if(!Kernel.activeAlerts[0]){
-                _ooverflow = document.body.style.overflow;
-            $bd.css('overflow', 'hidden');
-            }
+            var $_ = self.$element.parent().parent().on('mousewheel DOMMouseScroll' ,function(e){
+                var E = e.originalEvent;
+                var d = (E.wheelDelta) ? E.wheelDelta / 120 : -(E.detail || 0) / 3;
+                $_.scrollTop($_.scrollTop() - 150 * d);
+                e.preventDefault();
+            });
             $win.on('resize', self._resize).trigger('resize');
 
             // 加入活动窗体
@@ -158,10 +156,6 @@ void function($, plus_name) {
                     break;
                 }
             }
-            // body overflow 复原
-            if(!Kernel.activeAlerts[0]){
-                $bd.css('overflow', _ooverflow);
-            }
         }
     }
     // 设置屏幕居中
@@ -190,7 +184,7 @@ void function($, plus_name) {
     // 活动弹窗
     Kernel.activeAlerts = [];
 
-    $win.keydown(function(e){
+    $doc.keydown(function(e){
         // ESC键关闭
         if(e.keyCode == 27 && Kernel.activeAlerts.length){
             Kernel.activeAlerts[Kernel.activeAlerts.length-1].close();
