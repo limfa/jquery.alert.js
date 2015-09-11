@@ -1,7 +1,14 @@
 /**
  * jquery弹窗组件
  */
-void function($, plus_name) {
+void function(factory){
+    if(typeof define === 'function'){
+        define(['jquery'] ,factory);
+    }else{
+        factory(jQuery);
+    }
+}(function($) {
+    var plus_name = 'alert';
     var $doc = $(document),
     $bd = $('body'),
     $win =$(window) ;
@@ -28,6 +35,17 @@ void function($, plus_name) {
             });
         }
     };
+    // 添加鼠标滚动事件兼容
+    $.fn.mousewheel = function(callback){
+        return this.each(function(i ,el){
+            $(el).on('mousewheel DOMMouseScroll' ,function(e){
+                var E = e.originalEvent;
+                var d = E.wheelDelta ? E.wheelDelta : -(E.detail || 0) / 3 * 120;
+                e.wheelDelta = d;
+                callback.apply(this ,arguments);
+            });
+        });
+    };
     $(function(){
         $bd = $('body');
     });
@@ -45,7 +63,9 @@ void function($, plus_name) {
         // 动画时间
         time: 'normal',
         // 默认关闭选择器
-        closeSelector: '.close'
+        closeSelector: '.close',
+        // 滚动元素
+        scrollSelector: '.alert-scroll'
     };
 
     fn.constructor = Kernel;
@@ -116,11 +136,9 @@ void function($, plus_name) {
                 self.$element.trigger(plus_name + '.open');
             });
             self.setCenter();
-
-            var $_ = self.$element.parent().parent().on('mousewheel DOMMouseScroll' ,function(e){
-                var E = e.originalEvent;
-                var d = (E.wheelDelta) ? E.wheelDelta / 120 : -(E.detail || 0) / 3;
-                $_.scrollTop($_.scrollTop() - 150 * d);
+            // 超出宽高时滚动 并 禁止body滚动
+            var $_ = self.$element.parent().parent().mousewheel(function(e){
+                $_.scrollTop($_.scrollTop() - e.wheelDelta);
                 e.preventDefault();
             });
             $win.on('resize', self._resize).trigger('resize');
@@ -180,6 +198,17 @@ void function($, plus_name) {
         self.$element.on('click', self.setting.closeSelector, function() {
             self.close();
         });
+        // 滚动元素
+        if(self.setting.scrollSelector){
+            var $_ = $(self.setting.scrollSelector ,self.$element).mousewheel(function(e){
+                var st = $_.scrollTop();
+                $_.scrollTop(st - e.wheelDelta);
+                e.preventDefault();
+                if($_.scrollTop() !== st){
+                    e.stopPropagation();
+                }
+            });
+        }
     }
     // 活动弹窗
     Kernel.activeAlerts = [];
@@ -190,4 +219,4 @@ void function($, plus_name) {
             Kernel.activeAlerts[Kernel.activeAlerts.length-1].close();
         }
     })
-}(jQuery, 'alert');
+});
