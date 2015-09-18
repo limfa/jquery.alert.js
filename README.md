@@ -6,6 +6,9 @@ go to [DEMO](http://dmnote.uinav.cn/codemanager.php?a=list&id=37)
 
 
 ## 版本历史
+* 2015/09/18
+    1. 添加幕布透明度配置 maskOpacity:.5
+    2. 添加弹窗动画可配置扩展 actionType actionTypes
 * 2015/09/11
     1. 弹窗禁止滚动后对原本弹窗里的可滚动元素也限制了，修复，需添加参数 scrollSelector
 * 2015/08/22

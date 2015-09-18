@@ -58,6 +58,8 @@ void function(factory){
         activeClass: 'active',
         // 幕布类
         maskClass: 'mask',
+        // 幕布透明度
+        maskOpacity: .5,
         // 数据
         data: {},
         // 动画时间
@@ -65,7 +67,19 @@ void function(factory){
         // 默认关闭选择器
         closeSelector: '.close',
         // 滚动元素
-        scrollSelector: '.alert-scroll'
+        scrollSelector: '.alert-scroll',
+	// 动作
+        actionType: 'default',
+        actionTypes:{
+            'default': {
+                open: function(obj){
+                    obj.$element.hide().fadeIn(obj.setting.time);
+                },
+                close: function(obj){
+                    obj.$element.fadeOut(obj.setting.time);
+                }
+            }
+        }
     };
 
     fn.constructor = Kernel;
@@ -123,19 +137,20 @@ void function(factory){
         if (self.state == 'hide') {
             var activeClass = self.setting.activeClass;
             self.state = 'show';
+            self.setCenter();
             self.$element.appendTo($bd)
                 .wrap('<div style="position:fixed;top:0;right:0;bottom:0;left:0;overflow:auto;width:100%;height:100%;z-index:'+self.setting.zIndex+'"></div>')
-                .wrap('<div style="position:relative;width:100%;height:100%;"></div>')
-                .hide().fadeIn(self.setting.time);
+                .wrap('<div style="position:relative;width:100%;height:100%;"></div>');
+            self.setting.actionTypes[self.setting.actionType].open(self);
             // 弹出前事件
             self.$element.trigger(plus_name + '.beforeopen');
             // 加类
             activeClass && self.$element.addClass(activeClass);
-            self.$mask.insertBefore(self.$element).fadeTo(self.setting.time, .5 ,function(){
+            self.$mask.insertBefore(self.$element).fadeTo(self.setting.time, self.setting.maskOpacity ,function(){
                 // 弹出后事件
                 self.$element.trigger(plus_name + '.open');
             });
-            self.setCenter();
+
             // 超出宽高时滚动 并 禁止body滚动
             var $_ = self.$element.parent().parent().mousewheel(function(e){
                 $_.scrollTop($_.scrollTop() - e.wheelDelta);
@@ -153,16 +168,17 @@ void function(factory){
         if (self.state == 'show') {
             var activeClass = self.setting.activeClass;
             self.state = 'hide';
-            self.$mask.fadeOut();
             // 关闭前事件
             self.$element.trigger(plus_name + '.beforeclose');
-            // 去类
-            activeClass && self.$element.addClass(activeClass);
-            self.$element.fadeOut(self.setting.time, function() {
+            self.$mask.fadeOut(self.setting.time, function() {
                 self.$element.unwrap().unwrap();
                 // 关闭后事件
                 self.$element.trigger(plus_name + '.close');
             });
+            // 去类
+            activeClass && self.$element.addClass(activeClass);
+
+            self.setting.actionTypes[self.setting.actionType].close(self);
 
             $win.off('resize', self._resize)
 
