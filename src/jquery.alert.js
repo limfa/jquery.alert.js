@@ -1,3 +1,4 @@
+'use strict';
 /**
  * jquery弹窗组件
  */
@@ -12,7 +13,7 @@ void function(factory){
     var $doc = $(document),
     $bd = $('body'),
     $win =$(window) ;
-    fn = $.fn[plus_name] = function(opt) {
+    var fn = $.fn[plus_name] = function(opt) {
         // opt 为字符串时，进行插件操作，操作的方法为opt
         // 往后的参数将为方法的参数
         if (typeof opt == 'string') {
@@ -68,7 +69,7 @@ void function(factory){
         closeSelector: '.close',
         // 滚动元素
         scrollSelector: '.alert-scroll',
-	// 动作
+    // 动作
         actionType: 'default',
         actionTypes:{
             'default': {
